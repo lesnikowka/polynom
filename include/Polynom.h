@@ -6,7 +6,9 @@
 template <size_t N, size_t MAX_DEG>
 class Monom {
 	std::vector<size_t> _degree;
+	std::string monom_str;
 	double _coef;
+
 
 	enum class states {
 		//start
@@ -129,6 +131,7 @@ class Monom {
 					coef = -1.0;
 				else 
 					coef = std::stod(c);
+				break;
 			}
 		}
 		return coef;
@@ -137,7 +140,7 @@ class Monom {
 	bool check_indexes(const std::vector<size_t>& indexes) {
 		for (size_t i = 0; i < indexes.size(); i++)
 			for (size_t j = i; j < indexes.size(); j++)
-				if (indexes[i] > N || (indexes[i] == indexes[j] && i != j))
+				if (indexes[i] >= N || (indexes[i] == indexes[j] && i != j))
 					return false;
 	}
 
@@ -148,12 +151,8 @@ class Monom {
 	}
 
 public:
-	Monom() = delete;
-	Monom(std::vector<size_t> degree = std::vector<size_t>(), double coef = double()) : _degree(degree), _coef(coef) {}
-	Monom(const Monom& m) : _degree(m._degree), _coef(m._coef) {}
-	Monom(const std::string& s) {
-		parse(s);
-	}
+	Monom() = default;
+	Monom(const Monom& m) : _degree(m._degree), _coef(m._coef), monom_str(m.monom_str) {}
 
 	bool parse(std::string s) {
 		if (check_state_machine(s)) {
@@ -166,22 +165,19 @@ public:
 					_degree[indexes[i]] = degrees[i];
 				}
 				_coef = catch_coef(s);
+				monom_str = s;
 				return true;
 			}
 		}
 		return false;
 	}
 
-
-	std::vector<size_t> get_degree() { return _degree; }
-	void set_degree(const std::vector<size_t>& degree) { _degree = degree; }
-
-	double get_coef() { return _coef; }
-	void set_coef(double coef) { _coef = coef; }
+	std::string get_str() { return monom_str; }
 
 	Monom& operator=(const Monom& m) {
 		_degree = m._degree;
 		_coef = m._coef;
+		monom_str = m.monom_str;
 		return *this;
 	}
 	bool operator==(const Monom& m) {
@@ -198,9 +194,8 @@ public:
 		
 	}
 	Monom operator+(const Monom& m) {
-		if (_degree != m._degree) throw "degrees are not equate";
 		Monom<double, N> result(*this);
-		result._coef += m.coef;
+		result += m;
 		return result;
 	}
 	Monom& operator-=(const Monom& m) {
@@ -209,9 +204,8 @@ public:
 		return *this;
 	}
 	Monom operator-(const Monom& m) {
-		if (_degree != m._degree) throw "degrees are not equate";
 		Monom<double, N> result(*this);
-		result._coef -= m.coef;
+		result -= m;
 		return result;
 	}
 	Monom& operator*=(const Monom& m) {
@@ -224,23 +218,77 @@ public:
 
 	}
 	Monom operator*(const Monom& m) {
-		if (_degree != m._degree) throw "degrees are not equate";
 		Monom<double, N> result(*this);
-		result._coef *= m._coef;
-		for (size_t i = 0; i < _degree.size(); i++) {
-			result._degree[i] += m._degree[i];
-		}
+		result *= m;
+		return result;
+	}
+	Monom& operator*=(double c) {
+		coef *= c;
+		if (c == 0)
+			_degree = std::vector<size_t>();
 		return *this;
 	}
+	Monom operator*(double c) {
+		Monom<N, MAX_DEG> result(*this);
+		result *= c;
+		return result;
+	}
+
 };
 
-template <class N, size_t MAX_DEG>
+template <size_t N, size_t MAX_DEG>
 class Polynom {
+	std::vector<Monom<N, MAX_DEG>> _monoms;
+	std::string polynom_str;
+
+public:
+	Polynom() = default;
+	Polynom(const Polynom& p) : _monoms(p._monoms), polynom_str(p.polynom_str) {}
+
+	Polynom& operator=(const Polynom& p) {
+		_monoms = p._monoms;
+		polynom_str = p.polynom_str;
+	}
+
+	bool operator==(const Polynom& p) {
+		if (polynom_str == p.polynom_str)
+			return true;
+		return false;
+	}
+
+	bool operator!=(const Polynom& p) {
+		return !operator==(p);
+	}
 	
-	size_t Max_degree = 10;
+	bool parse(const std::string& s) {
+		std::vector<Monom<N, MAX_DEG>> monoms;
+		Monom<N, MAX_DEG> m;
 
-	Polynom() = delete;
-	Polynom(std::string s) {
+		size_t start = 0;
+		for (size_t i = 0; i <= s.size(); i++) {
+			if (s[i] == '-') {
+				if (i != 0) {
+					if (!m.parse(s.substr(start, i - start)))
+						return false;
+					monoms.push_back(m);
+				}
+				start = i;
+			}
+			else if (s[i] == '+') {
+				if (!m.parse(s.substr(start, i - start)))
+					return false;
+				monoms.push_back(m);
+				start = i + 1;
+			}
+			else if (i == s.size()) {
+				if (!m.parse(s.substr(start, i - start)))
+					return false;
+				monoms.push_back(m);
+			}
+		}
+		_monoms = monoms;
+		polynom_str = s;
 
+		return true;
 	}
 };
