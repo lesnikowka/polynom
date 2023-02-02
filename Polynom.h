@@ -6,7 +6,6 @@
 template <size_t N, size_t MAX_DEG>
 class Monom {
 	std::vector<size_t> _degree;
-	size_t Max_degree;
 	double _coef;
 
 	enum class states {
@@ -27,6 +26,9 @@ class Monom {
 	};
 
 	bool is_correct(const std::string& s) {
+
+		if (s == "") return false;
+
 		states state = states::minus_or_number_or_x;
 		for (auto e : s) {
 			switch (state) {
@@ -89,7 +91,29 @@ class Monom {
 
 		if (state != states::number_or_x) return false;
 
-		
+		std::vector<size_t> indexes;
+		size_t start;
+		for (size_t i = 0; i < s.size(); i++) {
+			if (s[i] == 'x')
+				start = i + 1;
+			else if (s[i] == '^')
+				indexes.push_back((size_t)std::stoul(s.substr(start, i - start)));
+		}
+
+		for (size_t i = 0; i < indexes.size(); i++)
+			for (size_t j = i; j < indexes.size(); j++)
+				if (indexes[i] > N || (indexes[i] == indexes[j] && i != j)) 
+					return false;
+
+		bool begin = true; 
+		for (size_t i = 0; i <= s.size(); i++) {
+			if (s[i] == '^') {
+				begin = false;
+				start = i + 1;
+			}
+			else if (!begin && (i == s.size() || s[i] == 'x') && (size_t)std::stoul(s.substr(start, i - start)) > MAX_DEG) 
+				return false;
+		}
 
 		return true;
 	}
@@ -99,8 +123,8 @@ class Monom {
 
 public:
 	Monom() = delete;
-	Monom(size_t Max_degree, std::vector<size_t> degree = std::vector<size_t>(), double coef = double()) : _degree(degree), _coef(coef) {}
-	Monom(const Monom& m) : _degree(m._degree), _coef(m._coef), Max_degree(m.Max_degree) {}
+	Monom(std::vector<size_t> degree = std::vector<size_t>(), double coef = double()) : _degree(degree), _coef(coef) {}
+	Monom(const Monom& m) : _degree(m._degree), _coef(m._coef) {}
 	Monom(const std::string& s) {
 
 	}
