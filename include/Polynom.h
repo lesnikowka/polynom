@@ -25,8 +25,7 @@ class Monom {
 		number_after_deg, // => number or x
 	};
 
-	bool is_correct(const std::string& s) {
-
+	bool check_state_machine(const std::string& s) {
 		if (s == "") return false;
 
 		states state = states::minus_or_number_or_x;
@@ -57,7 +56,7 @@ class Monom {
 					state = states::number_after_dot;
 				else if (e == 'x')
 					state = states::number_after_x;
-				else 
+				else
 					return false;
 				break;
 
@@ -90,7 +89,9 @@ class Monom {
 		}
 
 		if (state != states::number_or_x) return false;
+	}
 
+	std::vector<size_t> catch_indexes(const std::string& s) {
 		std::vector<size_t> indexes;
 		size_t start;
 		for (size_t i = 0; i < s.size(); i++) {
@@ -99,26 +100,51 @@ class Monom {
 			else if (s[i] == '^')
 				indexes.push_back((size_t)std::stoul(s.substr(start, i - start)));
 		}
+		return indexes;
+	}
 
-		for (size_t i = 0; i < indexes.size(); i++)
-			for (size_t j = i; j < indexes.size(); j++)
-				if (indexes[i] > N || (indexes[i] == indexes[j] && i != j)) 
-					return false;
-
-		bool begin = true; 
+	std::vector<size_t> catch_degrees(const std::string& s) {
+		size_t start;
+		std::vector<size_t> degrees;
+		bool begin = true;
 		for (size_t i = 0; i <= s.size(); i++) {
 			if (s[i] == '^') {
 				begin = false;
 				start = i + 1;
 			}
-			else if (!begin && (i == s.size() || s[i] == 'x') && (size_t)std::stoul(s.substr(start, i - start)) > MAX_DEG) 
-				return false;
+			else if (!begin && (i == s.size() || s[i] == 'x'))
+				degrees.push_back((size_t)std::stoul(s.substr(start, i - start)));
 		}
-
-		return true;
+		return degrees;
 	}
-	void parse(std::string s) {
 
+	double catch_coef(const std::string& s) {
+		double coef = 0;
+		for (size_t i = 0; i < s.size(); i++) {
+			if (s[i] == 'x') {
+				std::string c = s.substr(0, i);
+				if (c == "") 
+					coef = 1.0;
+				else if (c == "-") 
+					coef = -1.0;
+				else 
+					coef = std::stod(c);
+			}
+		}
+		return coef;
+	}
+
+	bool check_indexes(const std::vector<size_t>& indexes) {
+		for (size_t i = 0; i < indexes.size(); i++)
+			for (size_t j = i; j < indexes.size(); j++)
+				if (indexes[i] > N || (indexes[i] == indexes[j] && i != j))
+					return false;
+	}
+
+	bool check_degrees(const std::vector<size_t>& degrees) {
+		for (auto e : degrees)
+			if (e > MAX_DEG)
+				return false;
 	}
 
 public:
@@ -126,12 +152,26 @@ public:
 	Monom(std::vector<size_t> degree = std::vector<size_t>(), double coef = double()) : _degree(degree), _coef(coef) {}
 	Monom(const Monom& m) : _degree(m._degree), _coef(m._coef) {}
 	Monom(const std::string& s) {
-
+		parse(s);
 	}
 
-	bool test_state_machine(std::string s) {
-		return is_correct(s);
+	bool parse(std::string s) {
+		if (check_state_machine(s)) {
+			std::vector<size_t> indexes = catch_indexes(s);
+			std::vector<size_t> degrees = catch_degrees(s);
+
+			if (check_indexes(indexes) && check_degrees(degrees)) {
+				_degree = std::vector<size_t>(N);
+				for (size_t i = 0; i < degrees.size(); i++) {
+					_degree[indexes[i]] = degrees[i];
+				}
+				_coef = catch_coef(s);
+				return true;
+			}
+		}
+		return false;
 	}
+
 
 	std::vector<size_t> get_degree() { return _degree; }
 	void set_degree(const std::vector<size_t>& degree) { _degree = degree; }
