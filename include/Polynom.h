@@ -6,7 +6,6 @@
 template <size_t N, size_t MAX_DEG>
 class Monom {
 	std::vector<size_t> _degree;
-	std::string monom_str;
 	double _coef;
 
 
@@ -152,7 +151,7 @@ class Monom {
 
 public:
 	Monom() = default;
-	Monom(const Monom& m) : _degree(m._degree), _coef(m._coef), monom_str(m.monom_str) {}
+	Monom(const Monom& m) : _degree(m._degree), _coef(m._coef) {}
 
 	bool parse(std::string s) {
 		if (check_state_machine(s)) {
@@ -165,19 +164,30 @@ public:
 					_degree[indexes[i]] = degrees[i];
 				}
 				_coef = catch_coef(s);
-				monom_str = s;
 				return true;
 			}
 		}
 		return false;
 	}
 
-	std::string get_str() { return monom_str; }
+	std::string get_str() { 
+		std::string monom_str = std::to_string(_coef);
+		for (size_t i = 0; i < _degree.size(); i++) {
+			if (_degree[i] != 0) {
+				monom_str += 'x';
+				monom_str += std::to_string(i);
+				monom_str += '^';
+				monom_str += std::to_string(_degree[i]);
+			}
+		}
+		return monom_str;
+	}
+	double get_coef() { return _coef; }
+	std::vector<size_t> get_deg() { return _degree; }
 
 	Monom& operator=(const Monom& m) {
 		_degree = m._degree;
 		_coef = m._coef;
-		monom_str = m.monom_str;
 		return *this;
 	}
 	bool operator==(const Monom& m) {
@@ -186,10 +196,14 @@ public:
 	bool operator!=(const Monom& m) {
 		return !operator==(m);
 	}
+	bool is_similar(const Monom& m) {
+		return _degree == m._degree;
+	}
 
 	Monom& operator+=(const Monom& m) {
-		if (_degree != m._degree) throw "degrees are not equate";
-		_coef += m.coef;
+		if (!is_similar(m)) throw "monoms are not similar";
+
+		_coef += m._coef;
 		return *this;
 		
 	}
@@ -199,8 +213,8 @@ public:
 		return result;
 	}
 	Monom& operator-=(const Monom& m) {
-		if (_degree != m._degree) throw "degrees are not equate";
-		_coef -= m.coef;
+		if (!is_similar(m)) throw "monoms are not similar";
+		_coef -= m._coef;
 		return *this;
 	}
 	Monom operator-(const Monom& m) {
@@ -209,7 +223,7 @@ public:
 		return result;
 	}
 	Monom& operator*=(const Monom& m) {
-		if (_degree != m._degree) throw "degrees are not equate";
+		if (!is_similar(m)) throw "monoms are not similar";
 		_coef *= m._coef;
 		for (size_t i = 0; i < _degree.size(); i++) {
 			_degree[i] += m._degree[i];
@@ -236,22 +250,44 @@ public:
 
 };
 
+
+
+
 template <size_t N, size_t MAX_DEG>
 class Polynom {
 	std::vector<Monom<N, MAX_DEG>> _monoms;
-	std::string polynom_str;
+
+	class Sort_comparator {
+	public:
+		bool operator()(const Monom<N, MAX_DEG>& m1, const Monom<N, MAX_DEG>& m2) {
+			std::vector<size_t> deg1 = m1.get_deg(), deg2 = m2.get_deg();
+			for (size_t i = 0; i < deg1.size(); i++) {
+				if (deg1[i] < deg2[i]) {
+					return true;
+				}
+				else if (deg1[i] > deg2[i]) {
+					return false;
+				}
+			}
+			return false;
+		}
+	};
+
+	void recomposing() {
+		Sort_comparator sort_comparator;
+		std::qsort(_monoms.begin(), _monoms.end(), sort_comparator);
+	}
 
 public:
 	Polynom() = default;
-	Polynom(const Polynom& p) : _monoms(p._monoms), polynom_str(p.polynom_str) {}
+	Polynom(const Polynom& p) : _monoms(p._monoms) {}
 
 	Polynom& operator=(const Polynom& p) {
 		_monoms = p._monoms;
-		polynom_str = p.polynom_str;
 	}
 
 	bool operator==(const Polynom& p) {
-		if (polynom_str == p.polynom_str)
+		if (_monoms != p._monoms)
 			return true;
 		return false;
 	}
@@ -287,8 +323,13 @@ public:
 			}
 		}
 		_monoms = monoms;
-		polynom_str = s;
 
 		return true;
 	}
+
+	Polynom& operator+=(const Polynom& p) {
+
+	}
+
+	
 };
