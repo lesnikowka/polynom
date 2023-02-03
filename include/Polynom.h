@@ -2,6 +2,7 @@
 #include <vector>
 #include <list>
 #include <string>
+#include <algorithm>
 
 template <size_t N, size_t MAX_DEG>
 class Monom {
@@ -170,7 +171,7 @@ public:
 		return false;
 	}
 
-	std::string get_str() { 
+	std::string get_str() const {
 		std::string monom_str = std::to_string(_coef);
 		for (size_t i = 0; i < _degree.size(); i++) {
 			if (_degree[i] != 0) {
@@ -182,8 +183,8 @@ public:
 		}
 		return monom_str;
 	}
-	double get_coef() { return _coef; }
-	std::vector<size_t> get_deg() { return _degree; }
+	double get_coef() const { return _coef; }
+	std::vector<size_t> get_deg() const { return _degree; }
 
 	Monom& operator=(const Monom& m) {
 		_degree = m._degree;
@@ -208,7 +209,7 @@ public:
 		
 	}
 	Monom operator+(const Monom& m) {
-		Monom<double, N> result(*this);
+		Monom<N, MAX_DEG> result(*this);
 		result += m;
 		return result;
 	}
@@ -218,7 +219,7 @@ public:
 		return *this;
 	}
 	Monom operator-(const Monom& m) {
-		Monom<double, N> result(*this);
+		Monom<N, MAX_DEG> result(*this);
 		result -= m;
 		return result;
 	}
@@ -232,7 +233,7 @@ public:
 
 	}
 	Monom operator*(const Monom& m) {
-		Monom<double, N> result(*this);
+		Monom<N, MAX_DEG> result(*this);
 		result *= m;
 		return result;
 	}
@@ -262,12 +263,10 @@ class Polynom {
 		bool operator()(const Monom<N, MAX_DEG>& m1, const Monom<N, MAX_DEG>& m2) {
 			std::vector<size_t> deg1 = m1.get_deg(), deg2 = m2.get_deg();
 			for (size_t i = 0; i < deg1.size(); i++) {
-				if (deg1[i] < deg2[i]) {
+				if (deg1[i] > deg2[i]) 
 					return true;
-				}
-				else if (deg1[i] > deg2[i]) {
+				else if (deg1[i] < deg2[i]) 
 					return false;
-				}
 			}
 			return false;
 		}
@@ -275,7 +274,20 @@ class Polynom {
 
 	void recomposing() {
 		Sort_comparator sort_comparator;
-		std::qsort(_monoms.begin(), _monoms.end(), sort_comparator);
+		std::sort(_monoms.begin(), _monoms.end(), sort_comparator);
+		std::vector<Monom<N, MAX_DEG>> new_monoms;
+
+		for (size_t i = 0; i < _monoms.size() - 1;){
+			if (_monoms[i].is_similar(_monoms[i + 1])) {
+				new_monoms.push_back(_monoms[i + 1] + _monoms[i]);
+				i += 2;
+			}
+			else {
+				new_monoms.push_back(_monoms[i]);
+				i += 1;
+			}
+		}
+		_monoms = new_monoms;
 	}
 
 public:
@@ -323,6 +335,8 @@ public:
 			}
 		}
 		_monoms = monoms;
+
+		recomposing();
 
 		return true;
 	}
