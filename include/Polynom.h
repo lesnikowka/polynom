@@ -256,16 +256,16 @@ public:
 
 template <size_t N, size_t MAX_DEG>
 class Polynom {
-	std::vector<Monom<N, MAX_DEG>> _monoms;
+	std::list<Monom<N, MAX_DEG>> _monoms;
 
 	class Sort_comparator {
 	public:
 		bool operator()(const Monom<N, MAX_DEG>& m1, const Monom<N, MAX_DEG>& m2) {
 			std::vector<size_t> deg1 = m1.get_deg(), deg2 = m2.get_deg();
 			for (size_t i = 0; i < deg1.size(); i++) {
-				if (deg1[i] > deg2[i]) 
+				if (deg1[i] < deg2[i]) 
 					return true;
-				else if (deg1[i] < deg2[i]) 
+				else if (deg1[i] > deg2[i]) 
 					return false;
 			}
 			return false;
@@ -274,20 +274,21 @@ class Polynom {
 
 	void recomposing() {
 		Sort_comparator sort_comparator;
-		std::sort(_monoms.begin(), _monoms.end(), sort_comparator);
-		std::vector<Monom<N, MAX_DEG>> new_monoms;
-
-		for (size_t i = 0; i < _monoms.size() - 1;){
-			if (_monoms[i].is_similar(_monoms[i + 1])) {
-				new_monoms.push_back(_monoms[i + 1] + _monoms[i]);
-				i += 2;
-			}
-			else {
-				new_monoms.push_back(_monoms[i]);
-				i += 1;
+		_monoms.sort(sort_comparator);
+		
+		if (_monoms.size() >= 2) {
+			auto current = _monoms.begin();
+			auto next = _monoms.begin();
+			++next;
+			while (next != _monoms.end()) {
+				if ((*current).is_similar(*next)) {
+					*next += *current;
+					_monoms.erase(current);
+					current = next;
+					++next;
+				}
 			}
 		}
-		_monoms = new_monoms;
 	}
 
 public:
@@ -309,7 +310,7 @@ public:
 	}
 	
 	bool parse(const std::string& s) {
-		std::vector<Monom<N, MAX_DEG>> monoms;
+		std::list<Monom<N, MAX_DEG>> monoms;
 		Monom<N, MAX_DEG> m;
 
 		size_t start = 0;
