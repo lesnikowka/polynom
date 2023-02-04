@@ -86,6 +86,17 @@ class Monom {
 
 		if (state != states::number_or_x) return false;
 	}
+	bool check_indexes(const std::vector<size_t>& indexes) {
+		for (size_t i = 0; i < indexes.size(); i++)
+			for (size_t j = i; j < indexes.size(); j++)
+				if (indexes[i] >= N || (indexes[i] == indexes[j] && i != j))
+					return false;
+	}
+	bool check_degrees(const std::vector<size_t>& degrees) {
+		for (auto e : degrees)
+			if (e > MAX_DEG)
+				return false;
+	}
 
 	std::vector<size_t> catch_indexes(const std::string& s) {
 		std::vector<size_t> indexes;
@@ -100,7 +111,6 @@ class Monom {
 		}
 		return indexes;
 	}
-
 	std::vector<size_t> catch_degrees(const std::string& s) {
 		size_t start;
 		std::vector<size_t> degrees;
@@ -118,7 +128,6 @@ class Monom {
 
 		return degrees;
 	}
-
 	double catch_coef(const std::string& s) {
 		double coef = 0;
 
@@ -139,18 +148,6 @@ class Monom {
 		return coef;
 	}
 
-	bool check_indexes(const std::vector<size_t>& indexes) {
-		for (size_t i = 0; i < indexes.size(); i++)
-			for (size_t j = i; j < indexes.size(); j++)
-				if (indexes[i] >= N || (indexes[i] == indexes[j] && i != j))
-					return false;
-	}
-
-	bool check_degrees(const std::vector<size_t>& degrees) {
-		for (auto e : degrees)
-			if (e > MAX_DEG)
-				return false;
-	}
 
 public:
 	Monom() = default;
@@ -267,23 +264,6 @@ public:
 		result -= m;
 		return result;
 	}
-	Monom& operator*=(const Monom& m) {
-		if (!is_similar(m)) 
-			throw "monoms are not similar";
-
-		_coef *= m._coef;
-
-		for (size_t i = 0; i < _degree.size(); i++) 
-			_degree[i] += m._degree[i];
-		
-		return *this;
-
-	}
-	Monom operator*(const Monom& m) const {
-		Monom<N, MAX_DEG> result(*this);
-		result *= m;
-		return result;
-	}
 	Monom& operator*=(double c) {
 		_coef *= c;
 		if (c == 0)
@@ -389,6 +369,25 @@ public:
 
 		for (auto& e : _monoms)
 			result += e.calculate(x);
+
+		return result;
+	}
+
+	std::string get_str() {
+		std::string result;
+
+		if (_monoms.size() == 0)
+			return "";
+
+		for (auto& e : _monoms) {
+			if (e.get_coef() > 0) 
+				result += "+";
+				
+			result += e.get_str();
+		}
+		
+		if (result.front() == '+')
+			result = result.substr(1);
 
 		return result;
 	}
