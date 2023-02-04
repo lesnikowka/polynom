@@ -11,20 +11,13 @@ class Monom {
 
 
 	enum class states {
-		//start
 		minus_or_number_or_x,
-		//after minus and after numb after first deg numb
 		number_or_x,
-		//after number
 		number_or_dot_or_x,
-		//after dot
 		number_after_dot,
-		//after x
 		number_after_x,
-		//after first num after x
 		number_or_deg,
-		//after deg
-		number_after_deg, // => number or x
+		number_after_deg,
 	};
 
 	bool check_state_machine(const std::string& s) {
@@ -96,9 +89,11 @@ class Monom {
 	std::vector<size_t> catch_indexes(const std::string& s) {
 		std::vector<size_t> indexes;
 		size_t start;
+
 		for (size_t i = 0; i < s.size(); i++) {
 			if (s[i] == 'x')
 				start = i + 1;
+
 			else if (s[i] == '^')
 				indexes.push_back((size_t)std::stoul(s.substr(start, i - start)));
 		}
@@ -109,22 +104,27 @@ class Monom {
 		size_t start;
 		std::vector<size_t> degrees;
 		bool begin = true;
+
 		for (size_t i = 0; i <= s.size(); i++) {
 			if (s[i] == '^') {
 				begin = false;
 				start = i + 1;
 			}
+
 			else if (!begin && (i == s.size() || s[i] == 'x'))
 				degrees.push_back((size_t)std::stoul(s.substr(start, i - start)));
 		}
+
 		return degrees;
 	}
 
 	double catch_coef(const std::string& s) {
 		double coef = 0;
+
 		for (size_t i = 0; i < s.size(); i++) {
 			if (s[i] == 'x') {
 				std::string c = s.substr(0, i);
+
 				if (c == "") 
 					coef = 1.0;
 				else if (c == "-") 
@@ -134,6 +134,7 @@ class Monom {
 				break;
 			}
 		}
+
 		return coef;
 	}
 
@@ -161,10 +162,12 @@ public:
 
 			if (check_indexes(indexes) && check_degrees(degrees)) {
 				_degree = std::vector<size_t>(N);
-				for (size_t i = 0; i < degrees.size(); i++) {
+
+				for (size_t i = 0; i < degrees.size(); i++)
 					_degree[indexes[i]] = degrees[i];
-				}
+				
 				_coef = catch_coef(s);
+
 				return true;
 			}
 		}
@@ -173,6 +176,7 @@ public:
 
 	std::string get_str() const {
 		std::string monom_str = std::to_string(_coef);
+
 		for (size_t i = 0; i < _degree.size(); i++) {
 			if (_degree[i] != 0) {
 				monom_str += 'x';
@@ -181,8 +185,10 @@ public:
 				monom_str += std::to_string(_degree[i]);
 			}
 		}
+
 		return monom_str;
 	}
+
 	double get_coef() const { return _coef; }
 	std::vector<size_t> get_deg() const { return _degree; }
 
@@ -191,64 +197,96 @@ public:
 		_coef = m._coef;
 		return *this;
 	}
+
 	bool operator==(const Monom& m) {
 		return _degree == m._degree && _coef == m._coef;
 	}
+
 	bool operator!=(const Monom& m) {
 		return !operator==(m);
 	}
+
 	bool is_similar(const Monom& m) {
 		return _degree == m._degree;
 	}
 
+	bool operator<(const Monom& m) const{
+		for (size_t i = 0; i < _degree.size(); i++) {
+			if (_degree[i] < m._degree[i])
+				return true;
+
+			else if (_degree[i] > m._degree[i])
+				return false;
+		}
+
+		return false;
+	}
+
+	bool operator>(const Monom& m) const {
+		for (size_t i = 0; i < _degree.size(); i++) {
+			if (_degree[i] > m._degree[i])
+				return true;
+
+			else if (_degree[i] < m._degree[i])
+				return false;
+		}
+
+		return false;
+	}
+
 	Monom& operator+=(const Monom& m) {
-		if (!is_similar(m)) throw "monoms are not similar";
+		if (!is_similar(m)) 
+			throw "monoms are not similar";
 
 		_coef += m._coef;
+
 		return *this;
 		
 	}
-	Monom operator+(const Monom& m) {
+	Monom operator+(const Monom& m) const{
 		Monom<N, MAX_DEG> result(*this);
 		result += m;
 		return result;
 	}
 	Monom& operator-=(const Monom& m) {
-		if (!is_similar(m)) throw "monoms are not similar";
+		if (!is_similar(m)) 
+			throw "monoms are not similar";
 		_coef -= m._coef;
 		return *this;
 	}
-	Monom operator-(const Monom& m) {
+	Monom operator-(const Monom& m) const {
 		Monom<N, MAX_DEG> result(*this);
 		result -= m;
 		return result;
 	}
 	Monom& operator*=(const Monom& m) {
-		if (!is_similar(m)) throw "monoms are not similar";
+		if (!is_similar(m)) 
+			throw "monoms are not similar";
+
 		_coef *= m._coef;
-		for (size_t i = 0; i < _degree.size(); i++) {
+
+		for (size_t i = 0; i < _degree.size(); i++) 
 			_degree[i] += m._degree[i];
-		}
+		
 		return *this;
 
 	}
-	Monom operator*(const Monom& m) {
+	Monom operator*(const Monom& m) const {
 		Monom<N, MAX_DEG> result(*this);
 		result *= m;
 		return result;
 	}
 	Monom& operator*=(double c) {
-		coef *= c;
+		_coef *= c;
 		if (c == 0)
 			_degree = std::vector<size_t>();
 		return *this;
 	}
-	Monom operator*(double c) {
+	Monom operator*(double c) const {
 		Monom<N, MAX_DEG> result(*this);
 		result *= c;
 		return result;
 	}
-
 };
 
 
@@ -258,35 +296,25 @@ template <size_t N, size_t MAX_DEG>
 class Polynom {
 	std::list<Monom<N, MAX_DEG>> _monoms;
 
-	class Sort_comparator {
-	public:
-		bool operator()(const Monom<N, MAX_DEG>& m1, const Monom<N, MAX_DEG>& m2) {
-			std::vector<size_t> deg1 = m1.get_deg(), deg2 = m2.get_deg();
-			for (size_t i = 0; i < deg1.size(); i++) {
-				if (deg1[i] < deg2[i]) 
-					return true;
-				else if (deg1[i] > deg2[i]) 
-					return false;
-			}
-			return false;
-		}
-	};
-
 	void recomposing() {
-		Sort_comparator sort_comparator;
-		_monoms.sort(sort_comparator);
+		_monoms.sort();
 		
 		if (_monoms.size() >= 2) {
 			auto current = _monoms.begin();
 			auto next = _monoms.begin();
 			++next;
+
 			while (next != _monoms.end()) {
 				if ((*current).is_similar(*next)) {
 					*next += *current;
 					_monoms.erase(current);
 					current = next;
-					++next;
 				}
+
+				else
+					++current;
+
+				++next;
 			}
 		}
 	}
@@ -299,13 +327,14 @@ public:
 		_monoms = p._monoms;
 	}
 
-	bool operator==(const Polynom& p) {
+	bool operator==(const Polynom& p) const {
 		if (_monoms != p._monoms)
 			return true;
+
 		return false;
 	}
 
-	bool operator!=(const Polynom& p) {
+	bool operator!=(const Polynom& p)const {
 		return !operator==(p);
 	}
 	
@@ -319,6 +348,7 @@ public:
 				if (i != 0) {
 					if (!m.parse(s.substr(start, i - start)))
 						return false;
+
 					monoms.push_back(m);
 				}
 				start = i;
@@ -326,25 +356,70 @@ public:
 			else if (s[i] == '+') {
 				if (!m.parse(s.substr(start, i - start)))
 					return false;
+
 				monoms.push_back(m);
 				start = i + 1;
 			}
 			else if (i == s.size()) {
 				if (!m.parse(s.substr(start, i - start)))
 					return false;
+
 				monoms.push_back(m);
 			}
 		}
-		_monoms = monoms;
 
+		_monoms = monoms;
 		recomposing();
 
 		return true;
 	}
 
-	Polynom& operator+=(const Polynom& p) {
+	Polynom& operator*=(double c) {
+		for (auto& e : _monoms)
+			e *= c;
 
+		return *this;
 	}
 
+	Polynom operator*(double c) const {
+		Polynom<N, MAX_DEG> result(*this);
+
+		result *= c;
+
+		return result;
+	}
+
+	
+
+	Polynom& operator+=(const Polynom& p) {
+		for (auto& e : p._monoms) 
+			_monoms.push_back(e);
+
+		recomposing();
+
+		return *this;
+	}
+
+	Polynom operator+(const Polynom& p)const {
+		Polynom<N, MAX_DEG> result(*this);
+
+		result += p;
+
+		return result;
+	}
+
+	Polynom& operator-=(const Polynom& p) {
+		operator+=(p * (-1));
+
+		return *this;
+	}
+
+	Polynom operator-(const Polynom& p) const {
+		Polynom<N, MAX_DEG> result(*this);
+
+		result -= p;
+
+		return result;
+	}
 	
 };
