@@ -3,6 +3,7 @@
 #include <list>
 #include <string>
 #include <algorithm>
+#include <cmath>
 
 template <size_t N, size_t MAX_DEG>
 class Monom {
@@ -174,6 +175,18 @@ public:
 		return false;
 	}
 
+	double calculate(const std::vector<double>& x) const  {
+		if (N != x.size())
+			throw "size of vector doesn't match the number of variables";
+
+		double result = _coef;
+
+		for (size_t i = 0; i < N; i++) 
+			result *= std::pow(x[i], _degree[i]);
+		
+		return result;
+	}
+
 	std::string get_str() const {
 		std::string monom_str = std::to_string(_coef);
 
@@ -188,7 +201,6 @@ public:
 
 		return monom_str;
 	}
-
 	double get_coef() const { return _coef; }
 	std::vector<size_t> get_deg() const { return _degree; }
 
@@ -201,15 +213,12 @@ public:
 	bool operator==(const Monom& m) {
 		return _degree == m._degree && _coef == m._coef;
 	}
-
 	bool operator!=(const Monom& m) {
 		return !operator==(m);
 	}
-
 	bool is_similar(const Monom& m) {
 		return _degree == m._degree;
 	}
-
 	bool operator<(const Monom& m) const{
 		for (size_t i = 0; i < _degree.size(); i++) {
 			if (_degree[i] < m._degree[i])
@@ -221,7 +230,6 @@ public:
 
 		return false;
 	}
-
 	bool operator>(const Monom& m) const {
 		for (size_t i = 0; i < _degree.size(); i++) {
 			if (_degree[i] > m._degree[i])
@@ -333,7 +341,6 @@ public:
 
 		return false;
 	}
-
 	bool operator!=(const Polynom& p)const {
 		return !operator==(p);
 	}
@@ -374,13 +381,24 @@ public:
 		return true;
 	}
 
+	double calculate(const std::vector<double>& x) const{
+		if (N != x.size())
+			throw "size of vector doesn't match the number of variables";
+
+		double result = 0;
+
+		for (auto& e : _monoms)
+			result += e.calculate(x);
+
+		return result;
+	}
+
 	Polynom& operator*=(double c) {
 		for (auto& e : _monoms)
 			e *= c;
 
 		return *this;
 	}
-
 	Polynom operator*(double c) const {
 		Polynom<N, MAX_DEG> result(*this);
 
@@ -388,9 +406,6 @@ public:
 
 		return result;
 	}
-
-	
-
 	Polynom& operator+=(const Polynom& p) {
 		for (auto& e : p._monoms) 
 			_monoms.push_back(e);
@@ -399,7 +414,6 @@ public:
 
 		return *this;
 	}
-
 	Polynom operator+(const Polynom& p)const {
 		Polynom<N, MAX_DEG> result(*this);
 
@@ -407,13 +421,11 @@ public:
 
 		return result;
 	}
-
 	Polynom& operator-=(const Polynom& p) {
 		operator+=(p * (-1));
 
 		return *this;
 	}
-
 	Polynom operator-(const Polynom& p) const {
 		Polynom<N, MAX_DEG> result(*this);
 
@@ -421,5 +433,4 @@ public:
 
 		return result;
 	}
-	
 };
