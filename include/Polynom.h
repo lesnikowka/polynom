@@ -18,6 +18,9 @@ class Polynom {
 			while (next != _monoms.end()) {
 				if ((*current).is_similar(*next)) {
 					*next += *current;
+					if ((*next).get_coef() == 0) {
+						next = _monoms.erase(next);
+					}
 					_monoms.erase(current);
 					current = next;
 				}
@@ -36,15 +39,17 @@ public:
 
 	Polynom& operator=(const Polynom& p) {
 		_monoms = p._monoms;
+
+		return *this;
 	}
 
-	bool operator==(const Polynom& p) const {
+	bool operator==(const Polynom& p) const noexcept {
 		if (_monoms != p._monoms)
-			return true;
+			return false;
 
-		return false;
+		return true;
 	}
-	bool operator!=(const Polynom& p)const {
+	bool operator!=(const Polynom& p) const noexcept {
 		return !operator==(p);
 	}
 	
@@ -84,7 +89,7 @@ public:
 		return true;
 	}
 
-	double calculate(const std::vector<double>& x) const{
+	double calculate(const std::vector<double>& x) {
 		if (N != x.size())
 			throw "size of vector doesn't match the number of variables";
 
@@ -96,7 +101,7 @@ public:
 		return result;
 	}
 
-	std::string get_str() {
+	std::string get_str()  {
 		std::string result;
 
 		if (_monoms.size() == 0)
@@ -121,7 +126,7 @@ public:
 
 		return *this;
 	}
-	Polynom operator*(double c) const {
+	Polynom operator*(double c) {
 		Polynom<N, MAX_DEG> result(*this);
 
 		result *= c;
@@ -136,7 +141,7 @@ public:
 
 		return *this;
 	}
-	Polynom operator+(const Polynom& p)const {
+	Polynom operator+(const Polynom& p) {
 		Polynom<N, MAX_DEG> result(*this);
 
 		result += p;
@@ -148,7 +153,7 @@ public:
 
 		return *this;
 	}
-	Polynom operator-(const Polynom& p) const {
+	Polynom operator-(const Polynom& p)  {
 		Polynom<N, MAX_DEG> result(*this);
 
 		result -= p;

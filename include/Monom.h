@@ -177,7 +177,7 @@ public:
 		return false;
 	}
 
-	double calculate(const std::vector<double>& x) const {
+	double calculate(const std::vector<double>& x)  {
 		if (N != x.size())
 			throw "size of vector doesn't match the number of variables";
 
@@ -189,21 +189,33 @@ public:
 		return result;
 	}
 
-	std::string get_str() const {
-		if (_coef == 0)
+	std::string get_str()  {
+		std::string monom_str;
+
+		if (_coef == 0) {
 			return "";
-
-		std::string monom_str = std::to_string(_coef);
-
-		int last_zero = monom_str.size() - 1;
-		for (int i = monom_str.size() - 1; i >= 0; i--) {
-			if (monom_str[i] != '0') {
-				last_zero = i;
-				break;
-			}
 		}
+		else if (_coef != 1 && _coef != -1){
+			monom_str = std::to_string(_coef);
 
-		monom_str = monom_str.substr(0, last_zero + 1);
+			int last_zero = monom_str.size() - 1;
+			for (int i = monom_str.size() - 1; i >= 0; i--) {
+				if (monom_str[i] != '0') {
+					if (monom_str[i] != '.') {
+						last_zero = i;
+					}
+					else {
+						last_zero = i - 1;
+					}
+					break;
+				}
+			}
+
+			monom_str = monom_str.substr(0, last_zero + 1);
+		}
+		else if (_coef == -1) {
+			monom_str = "-";
+		}
 
 		for (size_t i = 0; i < _degree.size(); i++) {
 			if (_degree[i] != 0) {
@@ -216,8 +228,8 @@ public:
 
 		return monom_str;
 	}
-	double get_coef() const { return _coef; }
-	std::vector<size_t> get_deg() const { return _degree; }
+	double get_coef()  { return _coef; }
+	std::vector<size_t> get_deg()  { return _degree; }
 
 	Monom& operator=(const Monom& m) {
 		_degree = m._degree;
@@ -225,16 +237,16 @@ public:
 		return *this;
 	}
 
-	bool operator==(const Monom& m) {
+	bool operator==(const Monom& m) const noexcept {
 		return _degree == m._degree && _coef == m._coef;
 	}
-	bool operator!=(const Monom& m) {
+	bool operator!=(const Monom& m) const noexcept {
 		return !operator==(m);
 	}
-	bool is_similar(const Monom& m) {
+	bool is_similar(const Monom& m) const noexcept {
 		return _degree == m._degree;
 	}
-	bool operator<(const Monom& m) const {
+	bool operator<(const Monom& m)  {
 		for (size_t i = 0; i < _degree.size(); i++) {
 			if (_degree[i] < m._degree[i])
 				return true;
@@ -245,7 +257,7 @@ public:
 
 		return false;
 	}
-	bool operator>(const Monom& m) const {
+	bool operator>(const Monom& m)  {
 		for (size_t i = 0; i < _degree.size(); i++) {
 			if (_degree[i] > m._degree[i])
 				return true;
@@ -269,7 +281,7 @@ public:
 		return *this;
 
 	}
-	Monom operator+(const Monom& m) const {
+	Monom operator+(const Monom& m)  {
 		Monom<N, MAX_DEG> result(*this);
 		result += m;
 		return result;
@@ -285,7 +297,7 @@ public:
 
 		return *this;
 	}
-	Monom operator-(const Monom& m) const {
+	Monom operator-(const Monom& m)  {
 		Monom<N, MAX_DEG> result(*this);
 		result -= m;
 		return result;
@@ -296,7 +308,7 @@ public:
 			_degree = std::vector<size_t>();
 		return *this;
 	}
-	Monom operator*(double c) const {
+	Monom operator*(double c) {
 		Monom<N, MAX_DEG> result(*this);
 		result *= c;
 		return result;

@@ -51,15 +51,20 @@ TEST_F(Fixture_Monom, can_assign_monom) {
 }
 
 
-TEST_F(Fixture_Monom, is_similar_is_correct) {
+TEST_F(Fixture_Monom, is_similar_is_correct_1) {
 	m1.parse("-1.23x0^0x1^1x2^2");
 	m2.parse("100x2^2x1^1");
-	m3.parse("-1.23x0^0x1^1x2^1");
 
 	EXPECT_TRUE(m1.is_similar(m2));
-	EXPECT_FALSE(m1.is_similar(m3));
 }
 
+
+TEST_F(Fixture_Monom, is_similar_is_correct_2) {
+	m1.parse("-1.23x0^0x1^1x2^2");
+	m3.parse("-1.23x0^0x1^1x2^1");
+
+	EXPECT_FALSE(m1.is_similar(m3));
+}
 
 TEST_F(Fixture_Monom, false_if_degree_is_too_big) {
 	EXPECT_FALSE(m1.parse("-1.23x0^0x1^10x2^2"));
