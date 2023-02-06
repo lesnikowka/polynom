@@ -168,6 +168,9 @@ public:
 
 				_coef = catch_coef(s);
 
+				if (_coef == 0)
+					_degree = std::vector<size_t>(N);
+
 				return true;
 			}
 		}
@@ -260,6 +263,9 @@ public:
 
 		_coef += m._coef;
 
+		if (_coef == 0)
+			_degree = std::vector<size_t>(N);
+
 		return *this;
 
 	}
@@ -271,7 +277,12 @@ public:
 	Monom& operator-=(const Monom& m) {
 		if (!is_similar(m))
 			throw "monoms are not similar";
+
 		_coef -= m._coef;
+
+		if (_coef == 0)
+			_degree = std::vector<size_t>(N);
+
 		return *this;
 	}
 	Monom operator-(const Monom& m) const {
