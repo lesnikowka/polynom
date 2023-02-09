@@ -133,14 +133,52 @@ public:
 
 		return result;
 	}
+
+	//Polynom& operator+=(const Polynom& p) {  // inneficent implementation 
+	//	for (auto& e : p._monoms) 
+	//		_monoms.push_back(e);
+	//
+	//	recomposing();
+	//
+	//	return *this;
+	//}
+
 	Polynom& operator+=(const Polynom& p) {
-		for (auto& e : p._monoms) 
-			_monoms.push_back(e);
-
-		recomposing();
-
+		auto this_it = _monoms.begin();
+		auto p_it = p._monoms.begin();
+		bool insert_done;
+	
+		while (p_it != p._monoms.end()) {
+			this_it = _monoms.begin();
+			insert_done = false;
+			while (this_it != _monoms.end()) {
+				if ((*this_it).is_similar(*p_it)) {
+					*this_it += *p_it;
+					if ((*this_it).get_coef() == 0) {
+						this_it = _monoms.erase(this_it);
+					}
+					else {
+						++this_it;
+					}
+					insert_done = true;
+				}
+				else if ((*this_it) > (*p_it)) {
+					_monoms.insert(this_it, *p_it);
+					insert_done = true;
+					++this_it;
+				}
+				else {
+					++this_it;
+				}
+			}
+			if (!insert_done) {
+				_monoms.push_back(*p_it);
+			}
+			++p_it;
+		}
 		return *this;
 	}
+
 	Polynom operator+(const Polynom& p) const {
 		Polynom<N, MAX_DEG> result(*this);
 
