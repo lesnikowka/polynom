@@ -86,18 +86,23 @@ class Monom {
 			}
 		}
 
-		if (state != states::number_or_x) return false;
+		if (state != states::number_or_x && state != states::number_or_dot_or_x) 
+			return false;
+
+		return true;
 	}
 	bool check_indexes(const std::vector<size_t>& indexes) {
 		for (size_t i = 0; i < indexes.size(); i++)
 			for (size_t j = i; j < indexes.size(); j++)
 				if (indexes[i] >= N || (indexes[i] == indexes[j] && i != j))
 					return false;
+		return true;
 	}
 	bool check_degrees(const std::vector<size_t>& degrees) {
 		for (auto e : degrees)
 			if (e > MAX_DEG)
 				return false;
+		return true;
 	}
 
 	std::vector<size_t> catch_indexes(const std::string& s) {
@@ -134,7 +139,7 @@ class Monom {
 		double coef = 0;
 
 		for (size_t i = 0; i < s.size(); i++) {
-			if (s[i] == 'x') {
+			if (s[i] == 'x' || i == s.size() - 1) {
 				std::string c = s.substr(0, i);
 
 				if (c == "")
@@ -177,7 +182,7 @@ public:
 		return false;
 	}
 
-	double calculate(const std::vector<double>& x)  {
+	double calculate(const std::vector<double>& x)  const {
 		if (N != x.size())
 			throw "size of vector doesn't match the number of variables";
 
@@ -189,7 +194,7 @@ public:
 		return result;
 	}
 
-	std::string get_str()  {
+	std::string get_str()  const {
 		std::string monom_str;
 
 		if (_coef == 0) {
@@ -228,8 +233,8 @@ public:
 
 		return monom_str;
 	}
-	double get_coef()  { return _coef; }
-	std::vector<size_t> get_deg()  { return _degree; }
+	double get_coef()  const noexcept { return _coef; }
+	std::vector<size_t> get_deg()  const noexcept { return _degree; }
 
 	Monom& operator=(const Monom& m) {
 		_degree = m._degree;
@@ -246,7 +251,7 @@ public:
 	bool is_similar(const Monom& m) const noexcept {
 		return _degree == m._degree;
 	}
-	bool operator<(const Monom& m)  {
+	bool operator<(const Monom& m)  const noexcept {
 		for (size_t i = 0; i < _degree.size(); i++) {
 			if (_degree[i] < m._degree[i])
 				return true;
@@ -257,7 +262,7 @@ public:
 
 		return false;
 	}
-	bool operator>(const Monom& m)  {
+	bool operator>(const Monom& m)  const noexcept {
 		for (size_t i = 0; i < _degree.size(); i++) {
 			if (_degree[i] > m._degree[i])
 				return true;
@@ -281,7 +286,7 @@ public:
 		return *this;
 
 	}
-	Monom operator+(const Monom& m)  {
+	Monom operator+(const Monom& m)  const {
 		Monom<N, MAX_DEG> result(*this);
 		result += m;
 		return result;
@@ -297,7 +302,7 @@ public:
 
 		return *this;
 	}
-	Monom operator-(const Monom& m)  {
+	Monom operator-(const Monom& m)  const {
 		Monom<N, MAX_DEG> result(*this);
 		result -= m;
 		return result;
@@ -308,7 +313,7 @@ public:
 			_degree = std::vector<size_t>();
 		return *this;
 	}
-	Monom operator*(double c) {
+	Monom operator*(double c) const {
 		Monom<N, MAX_DEG> result(*this);
 		result *= c;
 		return result;

@@ -89,7 +89,7 @@ public:
 		return true;
 	}
 
-	double calculate(const std::vector<double>& x) {
+	double calculate(const std::vector<double>& x) const {
 		if (N != x.size())
 			throw "size of vector doesn't match the number of variables";
 
@@ -101,7 +101,7 @@ public:
 		return result;
 	}
 
-	std::string get_str()  {
+	std::string get_str()  const {
 		std::string result;
 
 		if (_monoms.size() == 0)
@@ -126,7 +126,7 @@ public:
 
 		return *this;
 	}
-	Polynom operator*(double c) {
+	Polynom operator*(double c) const {
 		Polynom<N, MAX_DEG> result(*this);
 
 		result *= c;
@@ -141,7 +141,7 @@ public:
 
 		return *this;
 	}
-	Polynom operator+(const Polynom& p) {
+	Polynom operator+(const Polynom& p) const {
 		Polynom<N, MAX_DEG> result(*this);
 
 		result += p;
@@ -153,7 +153,7 @@ public:
 
 		return *this;
 	}
-	Polynom operator-(const Polynom& p)  {
+	Polynom operator-(const Polynom& p) const  {
 		Polynom<N, MAX_DEG> result(*this);
 
 		result -= p;
