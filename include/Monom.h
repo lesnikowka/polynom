@@ -168,13 +168,11 @@ public:
 			if (check_indexes(indexes) && check_degrees(degrees)) {
 				_degree = std::vector<size_t>(N);
 
-				for (size_t i = 0; i < degrees.size(); i++)
-					_degree[indexes[i]] = degrees[i];
-
 				_coef = catch_coef(s);
 
-				if (_coef == 0)
-					_degree = std::vector<size_t>(N);
+				if (_coef != 0)
+					for (size_t i = 0; i < degrees.size(); i++)
+						_degree[indexes[i]] = degrees[i];
 
 				return true;
 			}
