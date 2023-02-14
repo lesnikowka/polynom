@@ -38,7 +38,6 @@ TEST_F(Fixture_Polynom, can_add_polynom) {
 	
 	p1 += p2;
 
-
 	EXPECT_EQ(p1.get_str(), "2x1^2x2^2+x0^2x1^2x2^2");
 }
 

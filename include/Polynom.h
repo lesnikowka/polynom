@@ -134,22 +134,12 @@ public:
 		return result;
 	}
 
-	//Polynom& operator+=(const Polynom& p) {  // inneficent implementation 
-	//	for (auto& e : p._monoms) 
-	//		_monoms.push_back(e);
-	//
-	//	recomposing();
-	//
-	//	return *this;
-	//}
-
 	Polynom& operator+=(const Polynom& p) {
 		auto this_it = _monoms.begin();
 		auto p_it = p._monoms.begin();
 		bool insert_done;
 	
 		while (p_it != p._monoms.end()) {
-			this_it = _monoms.begin();
 			insert_done = false;
 			while (this_it != _monoms.end()) {
 				if ((*this_it).is_similar(*p_it)) {
